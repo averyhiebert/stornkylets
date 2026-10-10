@@ -112,8 +112,8 @@ VAR s_requested_storylets = "" // Preselected list of storylet indices (for load
     ~return false
 }
 
-=== function s_select_with_probability(prob) ===
-~return RANDOM(0,1000)/1000.0 < prob
+=== function s_select_with_probability(p) ===
+~return RANDOM(0,1000)/1000.0 < p
 
 // Saving/loading individual items
 

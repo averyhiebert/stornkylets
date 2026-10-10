@@ -105,8 +105,10 @@ VAR landmarks_state = ""
 - (village_menu)
 You are in the town square of a quaint, randomized village.
 -> saved_storylet(-> possible_landmarks, 1, landmarks_state) ->
-+ [Visit the market.]
-    -> market ->
++ (market)[Visit the market.]
+    You can purchase all sorts of stuff here at the market.
+    <- saved_storylet(->market_options, 2, market_state)
+    ++ [Leave market.]
 + [Re-randomize the town.]
     ~landmarks_state = ""
     ~market_state = ""
@@ -121,11 +123,6 @@ You are in the town square of a quaint, randomized village.
 -w(1): There are an awful lot of rabbits around here. ->->
 }-> DONE
 
-= market
-You can purchase all sorts of stuff here.
-<- saved_storylet(->market_options, 2, market_state)
-+ [Leave market.] ->->
-
 = market_options
 {
 -w(1): <- buy("muffins","The muffins are delicious.")
@@ -139,7 +136,7 @@ You can purchase all sorts of stuff here.
 = buy(item,outcome)
 + [Purchase some {item}]
     {outcome}
-    ++ [Ok] ->->
+    ++ [Ok] -> market
 
 
 
