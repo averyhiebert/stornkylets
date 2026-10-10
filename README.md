@@ -26,19 +26,16 @@ Create a list of storylets using a big switch statement, specifying either weigh
 === example_event_list ===
 {
 -w(1): // w for 'weight', up to 3 decimal places supported
-    A simple event which does not require its own knot.
-    ->->
+    A simple event which does not require its own knot. ->->
 -cond(2 + 2 == 4): // c for 'condition', default weight is 1
-    Looks like math is still working.
-    ->->
+    Looks like math is still working. ->->
 -s(1,true): // s for 'storylet,' specifies both weight and condition
-    Another storylet.
-    ->->
+    Another storylet. ->->
 }-> DONE
 ```
 
 Then use the `storylet(-> storylets, n)` tunnel to select n = 1 random event:
-``
+```
 -> storylet(-> example_event_list, 1) ->
 ```
 
