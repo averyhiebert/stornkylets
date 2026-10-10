@@ -64,6 +64,11 @@ Test should end immediately.
 -> ok ->
 -> list_storylets(-> empty_list,3) ->
 -> execute_storylet(-> empty_list) ->
+{NO_STORYLETS:
+    Test passed!
+-else:
+    Test failed!
+}
 -> finished
 
 
@@ -81,7 +86,7 @@ New options should match previous options, except possibly now in a different or
 === composition
 + [Composition]
 -
-Testing: Composition of multiple lists.
+Testing: Composition of multiple lists in a single call.
 Should see options 1, 2, and 3 (not necessarily in that order).
 -> ok ->
 -> list_storylets(-> combined,3) ->

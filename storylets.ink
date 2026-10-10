@@ -15,6 +15,8 @@ Usage:
 
 // Public API:
 
+VAR NO_STORYLETS = false // if the most recent call found no storylets
+
 // call as tunnel, lists choices from up to n selected storylets
 === list_storylets(-> storylets, n) ===
 -> tunnel(storylets,n) ->->
@@ -57,6 +59,7 @@ VAR s_ran_out = false
 // Thread storylets n times without replacement
 // If preselected_string is not "", use it as preselected values.
 // First pass: just counting total weight
+~NO_STORYLETS = false
 ~s_ran_out = false
 ~s_first_pass = true
 ~s_cumulative_weight = 0
@@ -67,7 +70,9 @@ VAR s_ran_out = false
 <- storylets
 ~s_total_weight = s_cumulative_weight
 <- s_thread_n_helper(storylets,n) // subsequent passes
-+ ->-> // fallback if no choices exist
++ ->
+    ~NO_STORYLETS = true
+    ->-> // fallback if no choices exist
 -
 -> DONE
 
