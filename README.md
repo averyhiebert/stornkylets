@@ -1,4 +1,4 @@
-# Ink Storylets
+# Stornkylets
 
 Finally! A storylet system for Ink that is not a massive pain.
 

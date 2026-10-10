@@ -1,4 +1,4 @@
-INCLUDE storylets.ink
+INCLUDE stornkylets.ink
 
 -> test_menu
 
