@@ -1,147 +1,128 @@
-// Storylet system
+/******************************************************
+MIT License
 
-/* 
-Usage:
+Copyright (c) 2026 Avery Em Hiebert
 
--> thread_storylets(-> example_list,1) ->
-=== example_list() ===
-{
--s(1,true):
-    something
--s(3,some condition):
-    something else
-} ->->
-*/
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-// Public API:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*******************************************************/
+
 
 VAR NO_STORYLETS = false // if the most recent call found no storylets
 
-// call as tunnel, lists choices from up to n selected storylets
-=== list_storylets(-> storylets, n) ===
--> tunnel(storylets,n) ->->
+// Public/wrappers --------------------------------------
 
+// call as tunnel, lists choices from up to n selected storylets
+=== storylet(-> storylets, n) ===
+-> tunnel(storylets,n) ->->
 = tunnel(-> storylets, n)
-<- s_thread_n_long(storylets,n,"")
+<- s_start_first_pass(storylets,n,"")
 -> DONE
 
 // repeat a previous instance of thread_storylets from saved data, ASSUMING no individual storylet conditions have changed.
-=== load_storylets(-> storylets, n, save_data) ===
+=== saved_storylet(-> storylets, n, ref save_data) ===
 -> tunnel(storylets,n,save_data) ->->
-
-= tunnel(-> storylets,n,save_data)
-<- s_thread_n_long(storylets, n, save_data)
+= tunnel(-> storylets,n,ref save_data)
+<- s_start_first_pass(storylets, n, save_data)
+~save_data = s_already_displayed_storylets
 -> DONE
 
-// execute a random storylet event-style, assuming storylets consist of fallback choices.
-=== execute_storylet(-> storylets) ===
-<- s_thread_n_long(storylets,1,"")
--> DONE
-
-=== function save_storylets() ===
-// public: If called immediately after threading storylets, returns a data string that can be used with repeat_storylets to repeat the same selection, assuming that no conditions have changed.
-~return s_ignore_storylets
-
-// -----------------------------------------------------------------------------------------
-
-CONST s_precision_multiplier = 1000 // To support fractions
-
-VAR s_first_pass = true
-VAR s_cumulative_weight = 0 // cumulative so far during a pass
-VAR s_total_weight = 0 // total as calculated in first pass
-VAR s_ignored_weight = 0 // total weight of items ignored so far this pass
-VAR s_ignored_weight_total = 0 // total weight of items ignored on previous pass
-VAR s_selected_weight = 0
-VAR s_ignore_storylets = "" // Which storylets have already been shown so far.
-VAR s_saved_storylets = "" // For replaying already-selected storylets.
-VAR s_ran_out = false
-=== s_thread_n_long(-> storylets, n, save_data) ===
-// Thread storylets n times without replacement
-// If preselected_string is not "", use it as preselected values.
-// First pass: just counting total weight
-~NO_STORYLETS = false
-~s_ran_out = false
-~s_first_pass = true
-~s_cumulative_weight = 0
-~s_ignored_weight = 0
-~s_ignored_weight_total = 0
-~s_ignore_storylets = ""
-~s_saved_storylets = save_data 
-<- storylets
-~s_total_weight = s_cumulative_weight
-<- s_thread_n_helper(storylets,n) // subsequent passes
-+ ->
-    ~NO_STORYLETS = true
-    ->-> // fallback if no choices exist
--
--> DONE
-
-= s_thread_n_helper(-> storylets,n)
-{n <= 0: -> DONE }
-~s_ran_out = true
-~s_first_pass = false
-~s_cumulative_weight = 0
-~s_ignored_weight = 0
-<- storylets
-{not s_ran_out:
-    <- s_thread_n_helper(storylets, n-1)
-}
--> DONE
-
+// Shortcut for weight without condition
 === function w(weight) ===
 ~return s(weight,true)
 
+// Shortcut for condition without weight
 === function c(cond) ===
 ~return s(1,cond)
+
+// Private ---------------------------------------------------
+
+// Sorry for relying on spooky action-at-a-distance with so many globals.
+// This is Ink, after all.
+VAR s_is_first_pass = true
+VAR s_total_weight = 0
+VAR s_remaining_weight = 0
+VAR s_index = 0
+VAR s_already_displayed_storylets = ""
+VAR s_requested_storylets = "" // Preselected list of storylet indices (for loading saved data)
+=== s_start_first_pass(-> storylets, n, save_data) ===
+//~NO_STORYLETS = true
+~s_is_first_pass = true
+~s_total_weight = 0
+~s_already_displayed_storylets = ""
+~s_requested_storylets = save_data 
+<- storylets
+<- s_second_pass(storylets,n)
+~NO_STORYLETS = (s_already_displayed_storylets == "")
++ ->
+    ->-> // fallback for if no choices exist
+- -> DONE
+
+= s_second_pass(-> storylets,n)
+{n <= 0: -> DONE }
+~s_is_first_pass = false
+~s_remaining_weight = s_total_weight
+~s_index = 0
+<- storylets
+{s_total_weight > 0:
+    // Don't continue if no weight remains
+    <- s_second_pass(storylets, n-1)
+} -> DONE
+
 
 // TODO: Note that when threading multiple storylets, this approach currently increases the
 //  weight of storylets immediately after a storylet that was already selected. Must figure out
 //  how to handle this properly.
 === function s(my_weight,cond) ===
-// public: Specify weight and selection condition for storylet 
-{not cond:
-    // Anything whose condition is not satisfied is entirely ignored. 
-    ~return false
-}
-~s_cumulative_weight += my_weight
+// Specify weight and selection condition for storylet 
+~s_index += 1 // include *all* choices, for saving purposes
 {
-- s_first_pass:
+- not cond:
     ~return false
-- s_check_saved(s_ignore_storylets, s_cumulative_weight):
-    // We are in the "ignore" list.
-    ~s_ignored_weight += my_weight
+- s_is_first_pass:
+    ~s_total_weight += my_weight
     ~return false
-- s_check_saved(s_saved_storylets, s_cumulative_weight):
-    // We are auto-selected.
-    ~s_save_item(s_ignore_storylets, s_cumulative_weight) // ignore in future
-
-    ~s_ran_out = false
+- s_list_contains(s_already_displayed_storylets, s_index):
+    ~return false
+- s_list_contains(s_requested_storylets, s_index):
+    ~s_display_item(my_weight)
     ~return true
-- (s_saved_storylets == "") and s_select_item(my_weight):
-    // We have been selected!
-    ~s_save_item(s_ignore_storylets, s_cumulative_weight) // ignore in future
-    ~s_ignored_weight_total += my_weight 
-    ~s_ran_out = false
+- s_requested_storylets != "":
+    ~return false
+- s_select_with_probability(FLOAT(my_weight)/s_remaining_weight):
+    ~s_display_item(my_weight)
     ~return true
 - else:
+    ~s_remaining_weight -= my_weight
     ~return false
 }
 
-=== function s_select_item(my_weight) ===
-~temp remaining_weight = s_total_weight - s_cumulative_weight - (s_ignored_weight_total - s_ignored_weight) + my_weight
-~temp prob = RANDOM(0,s_precision_multiplier)/FLOAT(s_precision_multiplier)
-~temp thresh = (FLOAT(my_weight)/FLOAT(remaining_weight))
-~return prob < thresh
-
-
+=== function s_select_with_probability(prob) ===
+~return RANDOM(0,1000)/1000.0 < prob
 
 // Saving/loading individual items
 
-=== function s_save_item(ref saved,x) ===
-// Insert x into data string of selected weights
-~saved = saved + "[{x}]"
+=== function s_display_item(weight) ===
+//~NO_STORYLETS = false
+~s_total_weight -= weight
+~s_already_displayed_storylets = s_already_displayed_storylets + "[{s_index}]"
 
-=== function s_check_saved(saved,x) ===
+=== function s_list_contains(saved,x) ===
 // Return true if the given weight has been saved
 ~return saved ? "[{x}]"
 

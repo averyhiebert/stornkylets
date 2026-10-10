@@ -1,3 +1,6 @@
+// Some fairly informal tests
+// TODO Replace with closer to fully-automated tests, eventually
+
 INCLUDE stornkylets.ink
 
 -> test_menu
@@ -14,10 +17,12 @@ Test over.
 Select a test:
 <- basic_test
 <- event_tunnel_test
+<- single_event_with_choice
 <- n_exceeds_length
 <- conditionals_and_empty
 <- saved_results
 <- composition
+<- no_tunnel
 -> DONE
 
 === basic_test ===
@@ -25,25 +30,36 @@ Select a test:
 -
 Testing: basic functionality
 Should show 4 random storylets.
--> list_storylets(-> long_list,4) ->
+-> storylet(-> long_list,4) ->
 -> finished
 
 === event_tunnel_test ===
-+ [Automatic storylets]
++ [Individual choiceless storylet]
 -
 Testing: tunnel to automatic storylets.
-Should see 8 possibly-repeating events in a row.
+Should see 3 possibly-duplicate events in a row.
 -> ok ->
--> execute_storylet(-> event_list) ->
--> execute_storylet(-> event_list) ->
--> execute_storylet(-> event_list) ->
--> execute_storylet(-> event_list) ->
--> execute_storylet(-> event_list) ->
--> execute_storylet(-> event_list) ->
--> execute_storylet(-> event_list) ->
--> execute_storylet(-> event_list) ->
-
+-> storylet(-> event_list,1) ->
+-> storylet(-> event_list,1) ->
+-> storylet(-> event_list,1) ->
 -> finished
+
+
+=== single_event_with_choice ===
++ [Single event with choice]
+-
+Testing: Event with content and a choice.
+You should have to pick A or B to advance.
+-> ok ->
+-> storylet(-> event_with_choice_list,1) ->
+-> finished
+= event_with_choice_list
+{
+-w(1):
+    Choose A or B to continue.
+    + [A] ->->
+    + [B] ->->
+} -> DONE
 
 === n_exceeds_length
 + [n exceeds length]
@@ -51,7 +67,7 @@ Should see 8 possibly-repeating events in a row.
 Testing: n exceeds list length.
 Should see 8 options appear
 -> ok ->
--> list_storylets(-> long_list, 10) ->
+-> storylet(-> long_list, 10) ->
 
 -> finished
 
@@ -60,27 +76,32 @@ Should see 8 options appear
 + [Conditionals_and_empty]
 -
 Testing: conditionals and empty lists.
-Test should end immediately.
+Test should show one event and end immediately without interaction.
 -> ok ->
--> list_storylets(-> empty_list,3) ->
--> execute_storylet(-> empty_list) ->
+-> storylet(-> event_list,1) ->
+{NO_STORYLETS:
+    Test FAILED!
+    -> finished
+}
+-> storylet(-> empty_list,3) ->
+-> storylet(-> empty_list,1) ->
 {NO_STORYLETS:
     Test passed!
 -else:
-    Test failed!
+    Test FAILED!
 }
 -> finished
 
-
+VAR save = ""
 === saved_results
 + [Saved results]
 -
 Testing: Saved results.
+~save = "" // reset
 Remember what options are selected:
--> list_storylets(-> long_list,3) ->
-~temp saved = save_storylets()
+-> saved_storylet(-> long_list,3,save) ->
 New options should match previous options, except possibly now in a different order:
--> load_storylets(-> long_list,3,saved) ->
+-> saved_storylet(-> long_list,3,save) ->
 -> finished
 
 === composition
@@ -89,7 +110,7 @@ New options should match previous options, except possibly now in a different or
 Testing: Composition of multiple lists in a single call.
 Should see options 1, 2, and 3 (not necessarily in that order).
 -> ok ->
--> list_storylets(-> combined,3) ->
+-> storylet(-> combined,3) ->
 -> finished
 
 
@@ -114,6 +135,19 @@ Should see options 1, 2, and 3 (not necessarily in that order).
 <- comp1
 <- comp2
 -> DONE
+
+=== no_tunnel ===
++ [Thread rather than tunnel]
+-
+Testing: use as thread rather than tunnel, used safely within a tunnel.
+Should see 6 possibly-repeating lettered options.
+-> test_tunnel ->
+-> finished
+
+= test_tunnel
+<- storylet(-> long_list,3)
+<- storylet(-> long_list,3)
+{NO_STORYLETS: ->-> }
 
 // Example lists ------------------------------------------------------
 
@@ -145,16 +179,17 @@ Should see options 1, 2, and 3 (not necessarily in that order).
 
 === event_list ===
 {
-- s(1,true): + ->
+- w(1):
     Event A occurs.
     ->->
-- s(1,true): + ->
+- w(1):
     Event B occurs.
     ->->
-- s(1,true): + ->
+- w(1):
     Event C occurs.
     ->->
 } -> DONE
+
 
 
 
