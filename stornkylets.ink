@@ -61,7 +61,6 @@ VAR s_index = 0
 VAR s_already_displayed_storylets = ""
 VAR s_requested_storylets = "" // Preselected list of storylet indices (for loading saved data)
 === s_start_first_pass(-> storylets, n, save_data) ===
-//~NO_STORYLETS = true
 ~s_is_first_pass = true
 ~s_total_weight = 0
 ~s_already_displayed_storylets = ""
@@ -113,12 +112,12 @@ VAR s_requested_storylets = "" // Preselected list of storylet indices (for load
 }
 
 === function s_select_with_probability(p) ===
-~return RANDOM(0,1000)/1000.0 < p
+// Note: FLOAT is not necessary in Inky, but *is* in js????
+~return FLOAT(RANDOM(0,1000))/FLOAT(1000.0) < p
 
 // Saving/loading individual items
 
 === function s_display_item(weight) ===
-//~NO_STORYLETS = false
 ~s_total_weight -= weight
 ~s_already_displayed_storylets = s_already_displayed_storylets + "[{s_index}]"
 
