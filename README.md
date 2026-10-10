@@ -41,18 +41,6 @@ You'll probably want to put large/complicated events in a dedicated knot.  Note 
 
 See "Oregon Trail" in [examples.ink](examples.ink) for a more complex example.
 
-### Checking whether anything actually happened
-
-If the list of possible storylets is empty, execution will return from the tunnel as usual. The variable `NO_STORYLET` can be used to check whether storylets were actually found:
-
-```
-+ [Check your mailbox.]
-    -> storylets(-> mailbox,3) ->
-    {NO_STORYLET:
-        You have no new messages.
-    }
-```
-
 
 ## Sampling multiple options
 
@@ -94,6 +82,19 @@ You go home.
 ```
 
 Note that if you are selecting multiple storylets, each one should eventually lead to either a choice, `-> DONE`, or `-> END`.  Otherwise, strange things will happen.
+
+
+### Checking whether anything actually happened
+
+If the list of possible storylets is empty, execution will return from the tunnel as usual. The variable `NO_STORYLET` can be used to check whether storylets were actually found:
+
+```
++ [Check your mailbox.]
+    -> storylets(-> mailbox,3) ->
+    {NO_STORYLET:
+        You have no new messages.
+    }
+```
 
 
 ## Saved storylets
