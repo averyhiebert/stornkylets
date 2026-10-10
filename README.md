@@ -11,8 +11,6 @@ Features:
 - supports dynamically combining lists of storylets
 - the syntax is *relatively* pleasant (by Ink standards, at least)
 
-# Documentation
-
 ## Setup
 
 Download the single file `stornkylets.ink`, place it somewhere in your project, and `INCLUDE` it at the top of your main file.
@@ -43,7 +41,7 @@ You'll probably want to put large/complicated events in a dedicated knot.  Note 
 
 See "Oregon Trail" in [examples.ink](examples.ink) for a more complex example.
 
-## Checking whether anything actually happened
+### Checking whether anything actually happened
 
 If the list of possible storylets is empty, execution will return from the tunnel as usual. The variable `NO_STORYLET` can be used to check whether storylets were actually found:
 
@@ -56,7 +54,7 @@ If the list of possible storylets is empty, execution will return from the tunne
 ```
 
 
-## Collecting multiple options
+## Sampling multiple options
 
 You can also sample multiple storylets (without replacement), gathering text and choices from all of them to present to the user, as seen in the Park demo:
 
@@ -97,54 +95,8 @@ You go home.
 
 Note that if you are selecting multiple storylets, each one should eventually lead to either a choice, `-> DONE`, or `-> END`.  Otherwise, strange things will happen.
 
-## Dynamically composing lists of storylets
 
-You can combine multiple lists before feeding them to the `storylet` function using threads.
-
-This could be handy for grouping sets of storylets to avoid repeating conditions, e.g. using an if statement to group events by location, instead of needing to add a `location == london` condition to all of your "london
-
-```
--> storylet(-> all_possible_events,1) ->
-// Assuming that each of the threads mentioned below is itself a valid thread:
-=== all_possible_events ===
-<- always_available_events
-{companion:
-- Fogg:
-    <- fogg_events
-- Passepartout:
-    <- passepartout_events
-}
-{location:
-- london:
-    <- london_events
-- paris:
-    <- paris_events
-}
-->DONE
-```
-
-## Alternate approach: threading instead of tunneling.
-
-You could also use `storylet()` as a thread instead of a tunnel, allowing other forms of composition.  This should be safe to do if you are already inside a tunnel:
-
-```
-What opportunities await you today?
--> show_activities -> // note that show_activities is a tunnel!
-
-=== show_activities ===
-<- storylet(-> generic_activities,1)
-{location:
-- london:
-    <- storylet(-> london_activities,3)
-- paris:
-    <- storylet(-> paris_activities,3)
-}
--> DONE
-```
-
-If you do not want to use a tunnel or a thread, you could also just use a plain divert, and divert to wherever you like within each storylet.  However, be warned that this will cause undefined behaviour if there are no available storylets.
-
-## Saving storylet selections
+## Saved storylets
 
 You can save and replay a storylet selection using `saved_storylet(-> storylets, n, ref savestate`.  You must provide a reference to a string variable in which to store the storylet selection data.  If this string is empty (or otherwise evaluates to false) then a new selection will be made and the result will be saved.
 
@@ -181,21 +133,71 @@ The saved list of selections is based on indices relative to the overall list of
 Finally, note that the order in which the options are *displayed* may change when loading; specifically, after loading the order of the storylets will match the order in which they appear in the source code, not the random order in which they were originally displayed.
 
 
-## Nesting storylets
+## Dynamically composing lists of storylets
+
+You can combine multiple lists before feeding them to the `storylet` function using threads.
+
+This could be handy for grouping sets of storylets to avoid repeating conditions, e.g. using an if statement to group events by location, instead of needing to add a `location == london` condition to all of your "london
+
+```
+-> storylet(-> all_possible_events,1) ->
+// Assuming that each of the threads mentioned below is itself a valid thread:
+=== all_possible_events ===
+<- always_available_events
+{companion:
+- Fogg:
+    <- fogg_events
+- Passepartout:
+    <- passepartout_events
+}
+{location:
+- london:
+    <- london_events
+- paris:
+    <- paris_events
+}
+->DONE
+```
+
+## Threading vs. tunneling.
+
+You can also use `storylet()` as a thread instead of a tunnel, allowing other forms of composition.  This should be safe to do if you are already inside a tunnel:
+
+```
+What opportunities await you today?
+-> show_activities -> // note that show_activities is a tunnel!
+
+=== show_activities ===
+<- storylet(-> generic_activities,1)
+{location:
+- london:
+    <- storylet(-> london_activities,3)
+- paris:
+    <- storylet(-> paris_activities,3)
+}
+-> DONE
+```
+
+If you do not want to use a tunnel or a thread, you could also just use a plain divert, and divert to wherever you like within each storylet.  However, be warned that this will cause undefined behaviour if there are no available storylets.
+
+
+## Misc. other notes 
+
+### Nesting storylets
 
 It should be okay to call `storylet` from within another storylet *only if* it is gated behind some sort of choice.  Otherwise, it will cause undefined behaviour.
 
 In some cases, for invidually-sampled "random events" not gated behind a chice, a fallback choice `+ ->` may be a useful workaround. I'm not sure this would reliably work in settings where you are sampling more than one storylet, though.
 
 
-## A note on efficiency
+### Efficiency
 
 The selection algorithm runs in `O(nk^2)` time, where `n` is the total number of possible storylets and `k` is the number of storylets actually selected.  So if the number of storylets you're selecting is bounded by some constant (e.g. you never select more than 5 storylets at a time), then the efficiency is `O(n)`.
 
 However, if you want to show *all* available storylets (e.g. by setting the number of storylets requested to something very large), then in general this is `O(n^3)`.  So if you're planning on frequently displaying *all* available storylets from a long-ish list, then it might make more sense to just use conventional choices/conditions/threads.
 
 
-## Priority levels
+### Priority
 
 I have not implemented a priority system, because I feel that this is likely to be fairly game-specific.
 
