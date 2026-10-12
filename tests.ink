@@ -71,26 +71,39 @@ Should see 8 options appear
 
 -> finished
 
-
+VAR fallback_triggered = false
 === conditionals_and_empty
 + [Conditionals_and_empty]
 -
+~fallback_triggered = false
 Testing: conditionals and empty lists.
 Test should show one event and end immediately without interaction.
 -> ok ->
 -> storylet(-> event_list,1) ->
-{NO_STORYLETS:
-    Test FAILED!
+{fallback_triggered:
+    Test FAILED
+    (fallback was triggered inappropriately)
     -> finished
 }
 -> storylet(-> empty_list,3) ->
 -> storylet(-> empty_list,1) ->
-{NO_STORYLETS:
+{fallback_triggered:
     Test passed!
 -else:
-    Test FAILED!
+    Test FAILED
+    (fallback was not triggered when expected)
+    {s_total_weight}
 }
 -> finished
+
+= empty_list
+{
+-s(1,false): + opt A ->->
+-c(false): + opt B ->->
+-fallback():
+    ~fallback_triggered = true
+    ->->
+} -> DONE
 
 VAR save = ""
 === saved_results
@@ -110,8 +123,12 @@ New options should match previous options, except possibly now in a different or
 Testing: Composition of multiple lists in a single call.
 Should see options 1, 2, and 3 (not necessarily in that order).
 -> ok ->
--> storylet(-> combined,3) ->
+-> thr ->
 -> finished
+
+= thr
+<- storylet(-> combined,3)
+-> DONE
 
 
 = comp1
@@ -151,11 +168,6 @@ Should see 6 possibly-repeating lettered options.
 
 // Example lists ------------------------------------------------------
 
-=== empty_list ===
-{
--s(1,false): + opt A ->->
--c(false): + opt B ->->
-} -> DONE
 
 === long_list ===
 {
@@ -187,6 +199,9 @@ Should see 6 possibly-repeating lettered options.
     ->->
 - w(1):
     Event C occurs.
+    ->->
+- fallback():
+    ~fallback_triggered = true
     ->->
 } -> DONE
 

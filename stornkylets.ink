@@ -60,6 +60,7 @@ VAR s_remaining_weight = 0
 VAR s_index = 0
 VAR s_already_displayed_storylets = ""
 VAR s_requested_storylets = "" // Preselected list of storylet indices (for loading saved data)
+VAR s_skip_remaining = false // Necessary for composition to work properly
 === s_start_first_pass(-> storylets, n, save_data) ===
 ~s_is_first_pass = true
 ~s_total_weight = 0
@@ -77,6 +78,7 @@ VAR s_requested_storylets = "" // Preselected list of storylet indices (for load
 ~s_is_first_pass = false
 ~s_remaining_weight = s_total_weight
 ~s_index = 0
+~s_skip_remaining = false
 <- storylets
 {s_total_weight > 0:
     // Don't continue if no weight remains
@@ -93,6 +95,9 @@ VAR s_requested_storylets = "" // Preselected list of storylet indices (for load
     ~return false
 - s_is_first_pass:
     ~s_total_weight += my_weight
+    ~return false
+- s_skip_remaining:
+    // Already selected something this pass
     ~return false
 - s_list_contains(s_already_displayed_storylets, s_index):
     ~return false
@@ -113,11 +118,26 @@ VAR s_requested_storylets = "" // Preselected list of storylet indices (for load
 // Note: FLOAT is not necessary in Inky, but *is* in js????
 ~return FLOAT(RANDOM(0,1000))/FLOAT(1000.0) < p
 
+
+// Fallback option to avoid non-selection of storylets
+=== function fallback() ===
+{
+- s_is_first_pass:
+    ~return false
+- s_total_weight == 0:
+    ~return true
+- else:
+    ~return false
+}
+
+
 // Saving/loading individual items
 
 === function s_display_item(weight) ===
 ~s_total_weight -= weight
 ~s_already_displayed_storylets = s_already_displayed_storylets + "[{s_index}]"
+~s_skip_remaining = true
+
 
 === function s_list_contains(saved,x) ===
 // Return true if the given weight has been saved
