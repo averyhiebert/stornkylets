@@ -129,8 +129,6 @@ It's okay for the availability of individual choices to change based on their co
 
 This should be very helpful for e.g. generating complex randomized locations that you can leave and return to without them changing.
 
-The saved list of selections is based on indices relative to the overall list of storylets, so hypothetically you should be able to swap out "equivalent" lists (e.g. where the n-th item in one list corresponds in some way with the n-th item in the other list) with the same save data, which could be used to interesting effect if you're feeling adventurous.
-
 Finally, note that the order in which the options are *displayed* may change when loading; specifically, after loading the order of the storylets will match the order in which they appear in the source code, not the random order in which they were originally displayed.
 
 
@@ -138,7 +136,7 @@ Finally, note that the order in which the options are *displayed* may change whe
 
 You can combine multiple lists before feeding them to the `storylet` function using threads.
 
-This could be handy for grouping sets of storylets to avoid repeating conditions, e.g. using an if statement to group events by location, instead of needing to add a `location == london` condition to all of your "london
+This could be handy for grouping sets of storylets to avoid repeating conditions, e.g. using an if statement to group events by location, instead of needing to add a `location == london` condition to all of your london-related events.
 
 ```
 -> storylet(-> all_possible_events,1) ->
