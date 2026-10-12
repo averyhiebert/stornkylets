@@ -86,12 +86,12 @@ Note that if you are selecting multiple storylets, each one should eventually le
 
 ### Checking whether anything actually happened
 
-If the list of possible storylets is empty, execution will return from the tunnel as usual. The variable `NO_STORYLET` can be used to check whether storylets were actually found:
+If the list of possible storylets is empty, execution will return from the tunnel as usual. The variable `NO_STORYLETS` can be used to check whether storylets were actually found:
 
 ```
 + [Check your mailbox.]
     -> storylets(-> mailbox,3) ->
-    {NO_STORYLET:
+    {NO_STORYLETS:
         You have no new messages.
     }
 ```
