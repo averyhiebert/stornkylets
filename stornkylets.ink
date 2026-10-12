@@ -84,9 +84,7 @@ VAR s_requested_storylets = "" // Preselected list of storylet indices (for load
 } -> DONE
 
 
-// TODO: Note that when threading multiple storylets, this approach currently increases the
-//  weight of storylets immediately after a storylet that was already selected. Must figure out
-//  how to handle this properly.
+
 === function s(my_weight,cond) ===
 // Specify weight and selection condition for storylet 
 ~s_index += 1 // include *all* choices, for saving purposes
