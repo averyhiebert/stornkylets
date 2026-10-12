@@ -99,7 +99,7 @@ If the list of possible storylets is empty, execution will return from the tunne
 
 ## Saved storylets
 
-You can save and replay a storylet selection using `saved_storylet(-> storylets, n, ref savestate`.  You must provide a reference to a string variable in which to store the storylet selection data.  If this string is empty (or otherwise evaluates to false) then a new selection will be made and the result will be saved.
+You can save and replay a storylet selection using `saved_storylet(-> storylets, n, ref savestate)`.  You must provide a reference to a string variable in which to store the storylet selection data.  If this string is empty (or otherwise evaluates to false) then a new selection will be made and the result will be saved.
 
 ```
 VAR landmarks = ""
